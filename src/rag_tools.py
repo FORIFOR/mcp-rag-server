@@ -85,7 +85,7 @@ def register_rag_tools(server, rag_service: RAGService):
                     "description": "回答に利用するドキュメントIDを限定する場合に指定します",
                 },
             },
-            "required": ["query", "user_id", "notebook_id"],
+            "required": ["query"],
         },
         handler=lambda params: search_handler(params, rag_service),
     )
@@ -119,7 +119,7 @@ def register_rag_tools(server, rag_service: RAGService):
                     "default": False,
                 },
             },
-            "required": ["user_id", "notebook_id"],
+            "required": [],
         },
         handler=lambda params: get_document_count_handler(params, rag_service),
     )

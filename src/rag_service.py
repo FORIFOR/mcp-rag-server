@@ -16,6 +16,15 @@ from .embedding_generator import EmbeddingGenerator
 from .vector_database import VectorDatabase
 
 
+DEFAULT_SCOPE_USER_ID = os.environ.get("RAG_DEFAULT_USER_ID", "shared")
+DEFAULT_SCOPE_NOTEBOOK_ID = os.environ.get("RAG_DEFAULT_NOTEBOOK_ID", "shared")
+
+
+def _default_scope_value(value: Optional[str], fallback: str) -> str:
+    trimmed = (value or "").strip()
+    return trimmed or fallback
+
+
 class RAGService:
     """
     RAGサービスクラス
@@ -181,12 +190,8 @@ class RAGService:
         os.makedirs(base_processed, exist_ok=True)
 
         try:
-            user_key = (user_id or "").strip()
-            notebook_key = (notebook_id or "").strip()
-            if not user_key:
-                raise ValueError("user_id が指定されていません")
-            if not notebook_key:
-                raise ValueError("notebook_id が指定されていません")
+            user_key = _default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            notebook_key = _default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
             if incremental:
                 self.logger.info(
                     f"ディレクトリ '{source_dir}' （tenant={tenant}, notebook={notebook}) の差分ファイルをインデックス化しています..."
@@ -325,12 +330,8 @@ class RAGService:
             query_embedding = self.embedding_generator.generate_search_embedding(query)
 
             doc_filter_list = list(doc_filter) if doc_filter else None
-            user_key = (user_id or "").strip()
-            notebook_key = (notebook_id or "").strip()
-            if not user_key:
-                raise ValueError("search には user_id が必須です")
-            if not notebook_key:
-                raise ValueError("search には notebook_id が必須です")
+            user_key = _default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            notebook_key = _default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
             doc_count = self.vector_database.get_document_count(
                 tenant,
                 notebook,
@@ -686,10 +687,8 @@ class RAGService:
         インデックス内のドキュメント数を取得します。
         """
         try:
-            user_key = (user_id or "").strip()
-            notebook_key = (notebook_id or "").strip()
-            if not user_key or not notebook_key:
-                raise ValueError("user_id と notebook_id は必須です")
+            user_key = _default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            notebook_key = _default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
             scoped_notebook = (notebook or notebook_key).strip() or notebook_key
             count = self.vector_database.get_document_count(
                 tenant,
@@ -717,10 +716,8 @@ class RAGService:
         ドキュメント一覧を取得します。
         """
         try:
-            user_key = (user_id or "").strip()
-            notebook_key = (notebook_id or "").strip()
-            if not user_key or not notebook_key:
-                raise ValueError("user_id と notebook_id は必須です")
+            user_key = _default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            notebook_key = _default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
             scoped_notebook = (notebook or notebook_key).strip() or notebook_key
             docs = self.vector_database.list_documents(
                 tenant,
@@ -745,9 +742,7 @@ class RAGService:
         """
         ノートブック単位の集計を取得します。
         """
-        user_key = (user_id or "").strip()
-        if not user_key:
-            raise ValueError("user_id は必須です")
+        user_key = _default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
         return self.vector_database.list_notebook_summaries(
             user_id=user_key,
             tenant=tenant,
@@ -778,10 +773,8 @@ class RAGService:
         """
         指定したユーザー・ノートブックのドキュメントを削除します。
         """
-        user_key = (user_id or "").strip()
-        notebook_key = (notebook_id or "").strip()
-        if not user_key or not notebook_key:
-            raise ValueError("ノートブック削除には user_id と notebook_id が必須です")
+        user_key = _default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+        notebook_key = _default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
         scoped_notebook = (notebook or notebook_key).strip() or notebook_key
         return self.vector_database.delete_documents_by_scope(
             tenant=tenant,
@@ -802,10 +795,8 @@ class RAGService:
         """
         ドキュメントのメタデータを取得します。
         """
-        user_key = (user_id or "").strip()
-        notebook_key = (notebook_id or "").strip()
-        if not user_key or not notebook_key:
-            raise ValueError("ドキュメントメタデータ取得には user_id と notebook_id が必須です")
+        user_key = _default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+        notebook_key = _default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
         scoped_notebook = (notebook or notebook_key).strip() or notebook_key
         return self.vector_database.get_document_metadata(
             tenant,
@@ -827,10 +818,8 @@ class RAGService:
         """
         プレビュー表示用のメタ情報を取得し、アクセス制御を確認する。
         """
-        user_key = (user_id or "").strip()
-        notebook_key = (notebook_id or "").strip()
-        if not user_key or not notebook_key:
-            raise ValueError("ドキュメント参照には user_id と notebook_id が必須です")
+        user_key = _default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+        notebook_key = _default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
         scoped_notebook = (notebook or notebook_key).strip() or notebook_key
         meta = self.vector_database.get_document_metadata(
             tenant,
@@ -886,10 +875,8 @@ class RAGService:
         """
         指定した doc_ids に紐づくチャンクをまとめて取得します。
         """
-        user_key = (user_id or "").strip()
-        notebook_key = (notebook_id or "").strip()
-        if not user_key or not notebook_key:
-            raise ValueError("user_id と notebook_id は必須です")
+        user_key = _default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+        notebook_key = _default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
         scoped_notebook = (notebook or notebook_key).strip() or notebook_key
         return self.vector_database.get_chunks_for_documents(
             doc_ids=doc_ids,
@@ -919,11 +906,8 @@ class RAGService:
             )
             # 埋め込みモデルのロードをウォームアップ
             self.embedding_generator.generate_search_embedding("warmup")
-            user_key = (user_id or "").strip()
-            notebook_key = (notebook_id or "").strip()
-            if not user_key or not notebook_key:
-                self.logger.info("ウォームアップ用のスコープ情報が不足しているためスキップします")
-                return
+            user_key = _default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            notebook_key = _default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
             scoped_notebook = (notebook or notebook_key).strip() or notebook_key
             if self.vector_database.get_document_count(
                 tenant,

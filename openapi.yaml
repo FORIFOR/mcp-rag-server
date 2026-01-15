@@ -1,0 +1,940 @@
+openapi: 3.1.0
+info:
+  title: MCP RAG HTTP API
+  version: 1.0.0
+  description: |
+    V1 API for MCP RAG Server.
+    All responses are wrapped in an Envelope structure.
+    Authentication uses bearer tokens (Authorization: Bearer <token>).
+
+security:
+  - bearerAuth: []
+
+servers:
+  - url: /api/v1
+    description: V1 API
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      tags: [System]
+      security: []
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /notebooks:
+    get:
+      summary: List Notebooks
+      tags: [Notebooks]
+      parameters:
+        - name: include_global
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of notebooks
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Notebook'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+                        required: [items]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      summary: Create Notebook
+      tags: [Notebooks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              required: [name]
+      responses:
+        '201':
+          description: Notebook created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          notebook:
+                            $ref: '#/components/schemas/Notebook'
+                        required: [notebook]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /notebooks/{notebook_id}:
+    delete:
+      summary: Delete Notebook
+      tags: [Notebooks]
+      parameters:
+        - name: notebook_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[^/]+$'
+      responses:
+        '200':
+          description: Notebook deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          deleted:
+                            type: integer
+                        required: [deleted]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /notebooks/{notebook_id}/documents:
+    get:
+      summary: List Documents in Notebook
+      tags: [Documents]
+      parameters:
+        - name: notebook_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[^/]+$'
+      responses:
+        '200':
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Document'
+                        required: [items]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /notebooks/{notebook_id}/documents/{document_id}:
+    delete:
+      summary: Delete Document
+      tags: [Documents]
+      parameters:
+        - name: notebook_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[^/]+$'
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9_.:-]+$'
+      responses:
+        '200':
+          description: Document deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          deleted:
+                            type: boolean
+                        required: [deleted]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documents/{document_id}/pdf:
+    get:
+      summary: Get Document PDF
+      tags: [Documents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9_.:-]+$'
+      responses:
+        '200':
+          description: PDF file content
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: attachment; filename="xxx.pdf" or inline
+            ETag:
+              schema:
+                type: string
+              description: Cache validator
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documents/{document_id}/download:
+    get:
+      summary: Download Document File
+      tags: [Documents]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9_.:-]+$'
+      responses:
+        '200':
+          description: File download
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: attachment; filename="xxx.ext"
+            ETag:
+              schema:
+                type: string
+              description: Cache validator
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /notebooks/{notebook_id}/documents/{document_id}/rects:
+    get:
+      summary: Get Document Rects (Highlights)
+      tags: [Documents]
+      parameters:
+        - name: notebook_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[^/]+$'
+        - name: document_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9_.:-]+$'
+        - name: terms
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: hit_limit
+          in: query
+          schema:
+            type: integer
+        - name: max_hits
+          in: query
+          schema:
+            type: integer
+        - name: phrase
+          in: query
+          schema:
+            type: string
+        - name: debug
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 1
+        - name: engine
+          in: query
+          schema:
+            type: string
+        - name: include_items
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Rects data
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          doc_id:
+                            type: string
+                            pattern: '^[A-Za-z0-9_.:-]+$'
+                          page:
+                            type: integer
+                          rects:
+                            type: array
+                            items:
+                              type: object
+                              additionalProperties: true
+                          pages:
+                            type: array
+                            items:
+                              type: object
+                              additionalProperties: true
+                          impl:
+                            type: string
+                          engine:
+                            type: string
+                        required: [doc_id, rects, pages, impl, engine]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /notebooks/{notebook_id}/search:
+    post:
+      summary: Search Documents
+      tags: [Search]
+      parameters:
+        - name: notebook_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[^/]+$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SearchResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /notebooks/{notebook_id}/generate:
+    post:
+      summary: Generate Answer (RAG)
+      tags: [Search]
+      parameters:
+        - name: notebook_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[^/]+$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateRequest'
+      responses:
+        '200':
+          description: Generation result (Streaming SSE or JSON)
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              description: |
+                SSE events:
+                - event: meta {request_id, search_id?}
+                - event: delta {text}
+                - event: done {answer, citations}
+                - event: error {code, message}
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          answer:
+                            type: string
+                          citations:
+                            type: array
+                            items:
+                              type: object
+                              additionalProperties: true
+                        required: [answer, citations]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /notebooks/{notebook_id}/ingest:
+    post:
+      summary: Ingest Documents (Async)
+      tags: [Ingest]
+      parameters:
+        - name: notebook_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[^/]+$'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required: [files]
+      responses:
+        '202':
+          description: Ingest job accepted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          job:
+                            $ref: '#/components/schemas/Job'
+                        required: [job]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+
+  /notebooks/{notebook_id}/summarize:
+    post:
+      summary: Summarize Notebook (Async)
+      tags: [Summarize]
+      parameters:
+        - name: notebook_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[^/]+$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarizeRequest'
+      responses:
+        '202':
+          description: Summarize job accepted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          job:
+                            $ref: '#/components/schemas/Job'
+                        required: [job]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /jobs/{job_id}:
+    get:
+      summary: Get Job Status
+      tags: [Jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            format: uuid
+            format: uuid
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          job:
+                            $ref: '#/components/schemas/Job'
+                        required: [job]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /jobs/{job_id}:cancel:
+    post:
+      summary: Cancel Job
+      tags: [Jobs]
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job canceled
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          canceled:
+                            type: boolean
+                        required: [canceled]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Envelope'
+          examples:
+            default:
+              value:
+                request_id: "req_123"
+                data: null
+                error:
+                  code: "401"
+                  message: "Unauthorized"
+                  details: {}
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Envelope'
+          examples:
+            default:
+              value:
+                request_id: "req_123"
+                data: null
+                error:
+                  code: "403"
+                  message: "Forbidden"
+                  details: {}
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Envelope'
+          examples:
+            default:
+              value:
+                request_id: "req_123"
+                data: null
+                error:
+                  code: "404"
+                  message: "Not Found"
+                  details: {}
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Envelope'
+          examples:
+            default:
+              value:
+                request_id: "req_123"
+                data: null
+                error:
+                  code: "409"
+                  message: "Conflict"
+                  details: {}
+    PayloadTooLarge:
+      description: Payload Too Large
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Envelope'
+          examples:
+            default:
+              value:
+                request_id: "req_123"
+                data: null
+                error:
+                  code: "413"
+                  message: "Payload too large"
+                  details: {}
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+      required: [code, message]
+
+    Envelope:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        data:
+          anyOf:
+            - type: object
+              additionalProperties: true
+            - type: "null"
+        error:
+          anyOf:
+            - $ref: '#/components/schemas/ErrorResponse'
+            - type: "null"
+      required: [request_id]
+
+    Notebook:
+      type: object
+      properties:
+        notebook_id:
+          type: string
+          pattern: '^[^/]+$'
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required: [notebook_id, name]
+
+    Document:
+      type: object
+      properties:
+        document_id:
+          type: string
+          pattern: '^[A-Za-z0-9_.:-]+$'
+        notebook_id:
+          type: string
+          pattern: '^[^/]+$'
+        filename:
+          type: string
+        content_type:
+          type: string
+        size_bytes:
+          type: integer
+        status:
+          type: string
+          enum: [ready, indexing, failed, deleted]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required: [document_id, notebook_id, filename, status]
+
+    Job:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [ingest, summarize, reindex, ai_organize]
+        status:
+          type: string
+          enum: [queued, running, succeeded, failed, canceled]
+        progress:
+          type: number
+          minimum: 0
+          maximum: 1
+        result:
+          type: object
+          additionalProperties: true
+        error:
+          $ref: '#/components/schemas/ErrorResponse'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required: [job_id, type, status]
+
+    Pagination:
+      type: object
+      properties:
+        next_cursor:
+          type: [string, "null"]
+        limit:
+          type: integer
+      required: [limit]
+
+    SearchRequest:
+      type: object
+      properties:
+        query:
+          type: string
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+        doc_filter:
+          type: [array, "null"]
+          items:
+            type: string
+        selected_ids:
+          type: [array, "null"]
+          items:
+            type: string
+        retriever:
+          type: string
+          default: mcp
+        rerank:
+          type: boolean
+          default: false
+        top_k:
+          type: [integer, "null"]
+          minimum: 1
+        strict_rag:
+          type: [boolean, "null"]
+          default: true
+        with_context:
+          type: boolean
+          default: false
+        context_size:
+          type: integer
+          minimum: 0
+          default: 1
+      required: [query]
+
+    SearchHit:
+      type: object
+      properties:
+        hit_id:
+          type: string
+        document_id:
+          type: string
+        score:
+          type: number
+        chunk_text:
+          type: string
+        meta:
+          type: object
+          additionalProperties: true
+        citations:
+          type: array
+          items:
+            type: object
+            properties:
+              page:
+                type: [integer, "null"]
+              rects:
+                type: [array, "null"]
+                items:
+                  type: object
+            additionalProperties: true
+      required: [hit_id, document_id, score, chunk_text]
+
+    SearchResponse:
+      type: object
+      properties:
+        hits:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchHit'
+        search_id:
+          type: string
+          format: uuid
+      required: [hits, search_id]
+
+    GenerateRequest:
+      type: object
+      properties:
+        query:
+          type: string
+        mode:
+          type: string
+          enum: [retrieve_generate, generate_only]
+          default: retrieve_generate
+        hits:
+          type: [array, "null"]
+          items:
+            $ref: '#/components/schemas/SearchHit'
+        search_id:
+          type: [string, "null"]
+        strict_rag:
+          type: [boolean, "null"]
+          default: true
+        temperature:
+          type: [number, "null"]
+        max_tokens:
+          type: [integer, "null"]
+        provider:
+          type: [string, "null"]
+        model:
+          type: [string, "null"]
+        stream:
+          type: boolean
+          default: true
+      required: [query]
+
+    SummarizeRequest:
+      type: object
+      properties:
+        doc_ids:
+          type: array
+          items:
+            type: string
+        prompt:
+          type: string
+      required: [doc_ids]

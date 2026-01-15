@@ -14,6 +14,8 @@ from typing import List, Dict, Any, Optional, Sequence
 # .envの読み込み
 load_dotenv()
 EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", "1024"))
+DEFAULT_SCOPE_USER_ID = os.environ.get("RAG_DEFAULT_USER_ID", "shared")
+DEFAULT_SCOPE_NOTEBOOK_ID = os.environ.get("RAG_DEFAULT_NOTEBOOK_ID", "shared")
 
 
 class VectorDatabase:
@@ -91,6 +93,10 @@ class VectorDatabase:
             self.connection.rollback()
         except Exception as rollback_error:
             self.logger.warning(f"ロールバックに失敗しました: {rollback_error}")
+
+    def _default_scope_value(self, value: Optional[str], fallback: str) -> str:
+        trimmed = (value or "").strip()
+        return trimmed or fallback
 
     def initialize_database(self) -> None:
         """
@@ -390,10 +396,8 @@ class VectorDatabase:
             # ベクトル検索
             where_clauses = ["embedding IS NOT NULL"]
             params: List[Any] = []
-            scope_user = (user_id or "").strip()
-            scope_notebook = (notebook_id or "").strip()
-            if not scope_user or not scope_notebook:
-                raise ValueError("user_id と notebook_id は必須です")
+            scope_user = self._default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            scope_notebook = self._default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
             if tenant:
                 where_clauses.append("tenant = %s")
                 params.append(tenant)
@@ -489,10 +493,8 @@ class VectorDatabase:
 
             where_clauses = ["content IS NOT NULL"]
             params: List[Any] = []
-            scope_user = (user_id or "").strip()
-            scope_notebook = (notebook_id or "").strip()
-            if not scope_user or not scope_notebook:
-                raise ValueError("user_id と notebook_id は必須です")
+            scope_user = self._default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            scope_notebook = self._default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
             if tenant:
                 where_clauses.append("tenant = %s")
                 params.append(tenant)
@@ -777,10 +779,8 @@ class VectorDatabase:
             if notebook:
                 where.append("notebook = %s")
                 params.append(notebook)
-            scope_user = (user_id or "").strip()
-            scope_notebook = (notebook_id or "").strip()
-            if not scope_user or not scope_notebook:
-                raise ValueError("user_id と notebook_id は必須です")
+            scope_user = self._default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            scope_notebook = self._default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
             scope_clause = "(user_id = %s AND notebook_id = %s)"
             if include_global:
                 scope_clause = f"({scope_clause} OR is_global = TRUE)"
@@ -827,10 +827,8 @@ class VectorDatabase:
             if notebook:
                 clauses.append("notebook = %s")
                 params.append(notebook)
-            scope_user = (user_id or "").strip()
-            scope_notebook = (notebook_id or "").strip()
-            if not scope_user or not scope_notebook:
-                raise ValueError("user_id と notebook_id は必須です")
+            scope_user = self._default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            scope_notebook = self._default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
             scope_clause = "(user_id = %s AND notebook_id = %s)"
             if include_global:
                 scope_clause = f"({scope_clause} OR is_global = TRUE)"
@@ -904,9 +902,7 @@ class VectorDatabase:
         try:
             self._ensure_connection()
 
-            scope_user = (user_id or "").strip()
-            if not scope_user:
-                raise ValueError("user_id は必須です")
+            scope_user = self._default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
 
             cursor = self.connection.cursor()
             clauses: List[str] = ["notebook_id IS NOT NULL", "notebook_id <> ''"]
@@ -1024,10 +1020,8 @@ class VectorDatabase:
         try:
             self._ensure_connection()
 
-            scope_user = (user_id or "").strip()
-            scope_notebook_id = (notebook_id or "").strip()
-            if not scope_user or not scope_notebook_id:
-                raise ValueError("user_id と notebook_id は必須です")
+            scope_user = self._default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            scope_notebook_id = self._default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
 
             cursor = self.connection.cursor()
 
@@ -1110,10 +1104,8 @@ class VectorDatabase:
             self._ensure_connection()
 
             cursor = self.connection.cursor()
-            scope_user = (user_id or "").strip()
-            scope_notebook = (notebook_id or "").strip()
-            if not scope_user or not scope_notebook:
-                raise ValueError("user_id と notebook_id は必須です")
+            scope_user = self._default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            scope_notebook = self._default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
 
             base_params = [tenant, notebook, doc_base_id, scope_user, scope_notebook]
             where_clause = "tenant = %s AND notebook = %s AND doc_base_id = %s AND user_id = %s AND notebook_id = %s"
@@ -1365,10 +1357,8 @@ class VectorDatabase:
         try:
             self._ensure_connection()
 
-            scope_user = (user_id or "").strip()
-            scope_notebook_id = (notebook_id or "").strip()
-            if not scope_user or not scope_notebook_id:
-                raise ValueError("user_id と notebook_id は必須です")
+            scope_user = self._default_scope_value(user_id, DEFAULT_SCOPE_USER_ID)
+            scope_notebook_id = self._default_scope_value(notebook_id, DEFAULT_SCOPE_NOTEBOOK_ID)
 
             cursor = self.connection.cursor()
             placeholders = ", ".join(["%s"] * len(doc_list))
