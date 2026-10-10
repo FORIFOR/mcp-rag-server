@@ -1,0 +1,34 @@
+{
+  "repo": "FORIFOR/mcp-rag-server",
+  "branch": "main",
+  "tree_sha": "1116f228992b67265cf67ef38c26b3e4ea9d160d",
+  "tree_files": 276,
+  "read_files": [
+    {
+      "path": "README.md",
+      "sha": "6a07fcca026f7649169251b68c39acb7b5f8123a"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha": "792f5f0434cfa69a8b06f6e99af7a19c0ba8ea27"
+    },
+    {
+      "path": "src/main.py",
+      "sha": "10cd0a18024bc84afef686537630ce8f1e21340f"
+    },
+    {
+      "path": "src/cli.py",
+      "sha": "36ba52219cdd710b23c700a7d0888a3d81be54da"
+    },
+    {
+      "path": "src/mcp_server.py",
+      "sha": "b8b93260380d2d0d17f2f3abf1b08ec28761309d"
+    },
+    {
+      "path": "src/rag_tools.py",
+      "sha": "ec151f74d16b721bf6565bacee1108b4d60b09a0"
+    }
+  ],
+  "not_read_count": 270,
+  "scope": "initial entry-point and direct-import analysis; not exhaustive semantic scan"
+}

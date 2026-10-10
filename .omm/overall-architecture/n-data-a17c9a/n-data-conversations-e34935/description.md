@@ -1,0 +1,27 @@
+実在パス: `data/conversations`。138ファイル。
+
+- `data/conversations/demo/n_0WjGjY7U/local.json`
+- `data/conversations/demo/n_0cwT_lX4/local.json`
+- `data/conversations/demo/n_16jNsD_-/local.json`
+- `data/conversations/demo/n_18Wtc1f-/local.json`
+- `data/conversations/demo/n_1lS8hciW/local.json`
+- `data/conversations/demo/n_20rYlF_q/local.json`
+- `data/conversations/demo/n_2VJZxftm/local.json`
+- `data/conversations/demo/n_32QVrO85/local.json`
+- `data/conversations/demo/n_3LO-SapX/local.json`
+- `data/conversations/demo/n_4EF3lih3/local.json`
+- `data/conversations/demo/n_52ViMKwz/local.json`
+- `data/conversations/demo/n_7CeukcTU/local.json`
+- `data/conversations/demo/n_7okvbLO3/local.json`
+- `data/conversations/demo/n_89yjB0kY/local.json`
+- `data/conversations/demo/n_8ioiPT5L/local.json`
+- `data/conversations/demo/n_9W6i30aG/local.json`
+- `data/conversations/demo/n_9wkO1gj9/local.json`
+- `data/conversations/demo/n_A4raX6s5/local.json`
+- `data/conversations/demo/n_ASYPyvv6/local.json`
+- `data/conversations/demo/n_A_j3v5uX/local.json`
+- `data/conversations/demo/n_BTDrONa5/local.json`
+- `data/conversations/demo/n_Bd2mXBI-/local.json`
+- `data/conversations/demo/n_Bd9aMvni/local.json`
+- `data/conversations/demo/n_BxhErNlM/local.json`
+- `data/conversations/demo/n_CF0Tlr4S/local.json`

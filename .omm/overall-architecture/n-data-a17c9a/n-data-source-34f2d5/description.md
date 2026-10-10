@@ -1,0 +1,27 @@
+実在パス: `data/source`。30ファイル。
+
+- `data/source/01_prompt_engineering_jpn.pdf`
+- `data/source/__library_tmp__/ea005c590a6e4d14bbc0e69789111e5c/20251020シリコンバレーから見たAIの最新動向.pdf`
+- `data/source/demo/n_2VJZxftm/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/n_LLVGXLzm/20251020シリコンバレーから見たAIの最新動向.pdf`
+- `data/source/demo/n_NLVzI3Kf/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/n_VftwG9bu/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/n_X2OPDtxx/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/n_aaS-5gQT/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/n_ceQ-ENQz/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/n_jD6-Cmoj/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/n_wAQdw_pQ/20251020シリコンバレーから見たAIの最新動向.pdf`
+- `data/source/demo/notebook_0287d5d4-c533-4410-b565-6dd2e1b22eec/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/notebook_0d86b753-ceb5-4d65-bda4-73a2e204d926/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/notebook_1d997e00-dfbd-404c-a021-feca7455a765/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/notebook_7705b6d5-3be8-4b07-b9cf-5acf2e28e385/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/notebook_a9145105-1cf9-4ec2-8aa3-0033d174aa30/01_prompt_engineering_jpn.pdf`
+- `data/source/demo/notebook_b7e83f88-7226-4ffa-9853-2626591f0b3f/01_prompt_engineering_jpn.pdf`
+- `data/source/markdown/machine_learning_basics.md`
+- `data/source/markdown/python_basics.md`
+- `data/source/notebook_05e24f47-006e-4172-8a06-61a73803ca3b/01_prompt_engineering_jpn.pdf`
+- `data/source/notebook_0c159cf6-558f-407c-a299-dc283d132e47/01_prompt_engineering_jpn.pdf`
+- `data/source/notebook_2662cd66-bd56-44b7-ac4b-277146e6b343/01_prompt_engineering_jpn.pdf`
+- `data/source/notebook_3a50f808-3b60-4668-9385-0524ddb09a14/01_prompt_engineering_jpn.pdf`
+- `data/source/notebook_3c54af85-939b-4723-a276-4b89f6349792/01_prompt_engineering_jpn.pdf`
+- `data/source/notebook_531c6025-1fd6-4eab-88b1-fd42d19fa4e9/01_prompt_engineering_jpn.pdf`
